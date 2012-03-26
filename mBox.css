@@ -1,0 +1,38 @@
+
+div#mBox_overlay {
+	opacity:0;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; /*ie*/
+	filter: alpha(opacity=0);/*ie*/
+	position:fixed;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+}
+
+div.mBox {
+	zoom:1; /*ie*/
+	position:fixed;
+	top:50%;
+	left:50%;
+	opacity:0;
+}
+
+
+/* below here demo stuff */
+
+div.mBox_standard {
+	border: 2px solid lime;
+	color: white;
+	padding: 20px;
+	box-shadow: 0px 8px 17px #FFE;
+	background-color:#333;
+}
+
+div.mBox_harvey {
+	border: 3px solid lime;
+	color: white;
+	padding: 10px;
+	background-color:black;
+}
+
