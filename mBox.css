@@ -1,4 +1,5 @@
 
+/* mBox necesity css for overlay: */
 div#mBox_overlay {
 	opacity:0;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; /*ie*/
@@ -10,6 +11,7 @@ div#mBox_overlay {
 	left:0;
 }
 
+/* mBox necesity css for the mBox itself: */
 div.mBox {
 	zoom:1; /*ie*/
 	position:fixed;
@@ -18,8 +20,11 @@ div.mBox {
 	opacity:0;
 }
 
-
 /* below here demo stuff */
+
+div.mBox div.content.has_buttons {
+	margin-bottom:20px;
+}
 
 div.mBox_standard {
 	border: 2px solid lime;
@@ -36,3 +41,44 @@ div.mBox_harvey {
 	background-color:black;
 }
 
+div.mBox_clarence {
+	border: 2px solid #333;
+	border-radius:9px;
+	padding:40px;
+	background-color:white;
+	color:#444;
+	font-family:Georgia;
+	font-size:24px;
+	font-color:tan;
+	font-style:italic;
+	font-weight:bold;
+	background-image: url('/images/dep_2224176-Seamless-Ice-Cream-Pattern.jpg');
+}
+div.mBox_clarence button {
+
+}
+div.mBox_clarence button.affirm {
+	font-weight:bold;
+}
+div.mBox_clarence_overlay {
+	background-image: url('/images/scanline.gif');
+	background-color: transparent;
+}
+
+div.mBox div.close {
+  background-color: white;
+  border-bottom: 1px solid red;
+  border-left: 1px solid crimson;
+  color: crimson;
+  cursor: pointer;
+  padding: 1px 3px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-bottom-left-radius: 9px;
+}
+
+/* below here is stuff cancelling out the general css on the page */
+div.mBox button {
+	margin-bottom:0px;
+}

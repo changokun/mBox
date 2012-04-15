@@ -1,43 +1,32 @@
 // mBox
 // mBox is a js lib for making pop-up modalesque windows. not for slide shows.
 
-function mBox_trigger(key) {
-	mBox({
-		overlay_opacity:0.5,
-		overlay_color:'olive',
-		content:'/account/login/section/ajax',
-		mBox_width: '500px',
-		mBox_class: 'mBox_login'
-	});
-}
+//temp for dev:
+if (typeof console == 'undefined') console = {};
+if (typeof console.log == 'undefined') console.log = function() {};
 
 var mBox = {
 
 	user_default_options: {},
 
 	default_options: {
-		overlay_omit: false,
-		overlay_click_closes: true,
-		overlay_opacity: 0.8,
+		overlay_omit: false, // the overlay is the part that fades out the background
+		overlay_click_closes: true, // should a click outside the box close the box?
+		overlay_opacity: 0.8, // the overlay generally partially fades the background
 		overlay_color: 'black', // set this to an empty string to govern it by a css setting
+		overlay_class: '',
 		mBox_width: 500,
 		mBox_class: 'mBox_standard',
-		zIndex_base: 100,
-		overlay_fade_in_length: 2000,
-		container_fade_in_length: 6000,
-		content: "who is number 1?",
+		zIndex_base: 100, // if you use other objects with high z-indexes, you'll probably need to raise this
+		overlay_fade_in_length: 1000,
+		container_fade_in_length: 2000,
+		content: "mBox content goes here. Click outside this box to close.",
 		dismiss_button_text: '', // leave empty to omit
-		affirm_button: {
-			text: 'Okay',
-			callback: function() { alert('oink');}
-		},
-		misc_buttons: [{
-			text: 'Other',
-			callback: function() { alert('moo');}
-		},{
-			text: 'fuck',
-			callback: function() { alert('shit');}
-		}]
+		affirm_button: '',
+		misc_buttons: '',
+		close_button_content: '', // typically 'close' or 'X'
+		close_button_class: '',
+		jog_length: 500 // ms - length of animation of vertical sliding back into vertical center
 	},
 
 	set_default_options: function(options) {
@@ -45,7 +34,7 @@ var mBox = {
 	},
 
 	get_options: function() {
-		var options = this.default_options;
+		var options = jQuery.extend(true, {}, this.default_options); // getting a clone....
 		for(x in this.user_default_options) {
 			options[x] = this.user_default_options[x];
 		}
@@ -54,13 +43,14 @@ var mBox = {
 
 	jog_boxes: function(seen) {
 		if(typeof seen != 'boolean') seen = true;
+		var options = this.get_options();
 		var box = $('.mBox');
 		//var newLeft = box.width()/-2 + 'px';
 		var newTop = box.height()/-2 + 'px'
 		box.each(function(){
 			if(seen) {
 				//$(this).animate({marginLeft:newLeft}, 1000);
-				$(this).animate({marginTop:newTop}, 1000);
+				$(this).animate({marginTop:newTop}, options.jog_length);
 			} else {
 				//$(this).css('margin-left', newLeft);
 				$(this).css('margin-top', newTop);
@@ -69,9 +59,13 @@ var mBox = {
 	},
 
 	close: function(all) {
-		// if there is only one, then it is all by default
+		// if there is only one, then it is all by default - this is done this way because the overlay isn't removed unless we are killing all the mboxes
+		console.log(all);
+		console.log($(".mBox").length);
 		if($(".mBox").length == 1) all = 'all';
+		console.log(typeof all + ' ' + all);
 		if(typeof all != 'undefined' && all == 'all') {
+			console.log('all');
 			// close/animate.remove all elements with this mbox index
 			$("#mBox_overlay").stop().animate({opacity:0}, 500, function(){$(this).remove()});
 			$(".mBox").stop().animate({opacity:0}, 1000, function(){$(this).remove()});
@@ -87,11 +81,9 @@ var mBox = {
 	open: function(argument_options) {
 		var options = this.get_options();
 
-		for(x in options) options[x] = argument_options[x] || options[x];
-
-		console.log('openwith these options');
-		console.log(options);
-		
+		for(x in options) {
+			if(typeof argument_options[x] != 'undefined') options[x] = argument_options[x];
+		}
 
 		// count how many we already have
 		var mBox_index = parseInt($(".mBox").length);
@@ -109,9 +101,11 @@ var mBox = {
 				var background_color_fragment = "";
 				if(options.overlay_color.length) background_color_fragment = "background-color:" + options.overlay_color + "; "
 				var overlay = $('<div id="mBox_overlay" style="' + background_color_fragment + '"></div>');
+				if(options.overlay_class) overlay.addClass(options.overlay_class);
+				console.log(options.overlay_click_closes);
 				if(options.overlay_click_closes) {
 					overlay.click(function(){
-						mBox.close('all');
+						mBox.close();
 					});
 				}
 				// set the zindex
@@ -128,30 +122,42 @@ var mBox = {
 		// create the mBox
 		var mBox_container = $('<div class="mBox ' + options.mBox_class + '" style="width:' + options.mBox_width + 'px; margin-left:' + options.mBox_width/-2 + 'px; z-index: ' + container_zIndex + '; opacity:0;"><div class="content"></div></div>');
 
+		// is there a X - close button?
+		if(options.close_button_class || options.close_button_position || options.close_button_content) {
+			var close_button = $('<div class="close"></div>');
+			if(options.close_button_content.length) close_button.html(options.close_button_content);
+			close_button.click(mBox.close);
+			mBox_container.append(close_button);
+		}
+
 		// is there an affirm button? prep it.
 		if(typeof options.affirm_button == 'object') {
-			var affirm_button = $('<button type="button" style="float:right; margin-left:20px;"></button>');
+			var affirm_button = $('<button type="button" class="affirm" style="float:right; margin-left:20px;"></button>');
 			affirm_button.html(options.affirm_button.text);
-			affirm_button.click(options.affirm_button.callback);
+			affirm_button.click(function(){
+				options.affirm_button.callback();
+				mBox.close();
+			});
+			mBox_container.find(".content").addClass('has_buttons');
 			mBox_container.append(affirm_button);
 		}
 		
 		// is there a dismiss button? prep it.
 		if(options.dismiss_button_text.length) {
-			var dismiss_button = $('<button type="button" style="float:right; margin-left:20px;"></button>');
+			var dismiss_button = $('<button type="button" class="dismiss" style="float:right; margin-left:20px;"></button>');
 			dismiss_button.html(options.dismiss_button_text);
-			dismiss_button.click(function(){
-				mBox.close();
-			});
+			dismiss_button.click(mBox.close);
+			mBox_container.find(".content").addClass('has_buttons');
 			mBox_container.append(dismiss_button);
 		}
 
 		// are there any misc buttons?
-		if(typeof options.misc_buttons == 'array') {
-			for(x=0; x<=options.misc_buttons.length; x++) {
-				var misc_button = $('<button type="button" style="float:right; margin-left:20px;"></button>');
-				misc_button.html(options.misc_buttons[x].dismiss_button_text);
+		if(typeof options.misc_buttons == 'array' || typeof options.misc_buttons == 'object') { // ? wtf? doesn't [this, make, an, array] ?
+			for(x=0; x<=options.misc_buttons.length -1; x++) {
+				misc_button = $('<button type="button" style="float:right; margin-left:20px;"></button>');
+				misc_button.html(options.misc_buttons[x].misc_button_text);
 				misc_button.click(options.misc_buttons[x].callback);
+				mBox_container.find(".content").addClass('has_buttons');
 				mBox_container.append(misc_button);
 			}
 		}
